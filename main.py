@@ -35,12 +35,27 @@ class Character:
     def perform_move(self):
         self.movement_strategy.move(self)
 
+class Equipment(MovementStrategy):
+    def __init__(self, get_equipment):
+        self.get_equipment = get_equipment
+
+    def move(self, character):
+        self.get_equipment.move(character)
+
+class WingsEquipment(Equipment):
+    def move(self, character):
+        self.get_equipment.move(character)
+        character.speed += 1  
+
+class PotionEquipment(Equipment):
+    def move(self, character):
+        self.get_equipment.move(character)
+        character.energy += 10  
+
 character1 = Character(WalkStrategy())
-character1.perform_move()
+character1_with_sword = Character(WingsEquipment(character1))
+character1_with_armor = Character(PotionEquipment(character1))
 
-character2 = Character(RunStrategy())
-character2.perform_move()
-
-character3 = Character(FlyStrategy())
-character3.perform_move()
-#checking
+character1.perform_move() 
+character1_with_sword.perform_move()  
+character1_with_armor.perform_move()  

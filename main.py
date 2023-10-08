@@ -1,61 +1,60 @@
-class MovementStrategy:
-    def move(self, character):
-        pass
-
-class WalkStrategy(MovementStrategy):
-    def move(self, character):
-        character.speed = 1
-        character.energy += 10
-        print(f"Character is walking (Speed: {character.speed}, Energy: {character.energy})")
-
-class RunStrategy(MovementStrategy):
-    def move(self, character):
-        if character.energy >= 20:
-            character.speed = 3
-            character.energy -= 20
-            print(f"Character is running (Speed: {character.speed}, Energy: {character.energy})")
-        else:
-            print("Not enough energy to run.")
-
-class FlyStrategy(MovementStrategy):
-    def move(self, character):
-        if character.energy >= 50:
-            character.speed = 5
-            character.energy -= 50
-            print(f"Character is flying (Speed: {character.speed}, Energy: {character.energy})")
-        else:
-            print("Not enough energy to fly.")
-
 class Character:
-    def __init__(self, movement_strategy):
-        self.movement_strategy = movement_strategy
+    def __init__(self, name):
+        self.name = name
         self.speed = 0
         self.energy = 100
+        self.hp = 100
+        self.damage = 10
 
-    def perform_move(self):
-        self.movement_strategy.move(self)
+    def display_stats(self):
+        print(f"{self.name}: Speed={self.speed}, Energy={self.energy}, HP={self.hp}, Damage={self.damage}")
 
-class Equipment(MovementStrategy):
-    def __init__(self, get_equipment):
-        self.get_equipment = get_equipment
+class Equipment(Character):
+    def __init__(self, character):
+        super().__init__(character.name)
+        self.character = character
 
-    def move(self, character):
-        self.get_equipment.move(character)
+    def display_stats(self):
+        self.character.display_stats()
 
 class WingsEquipment(Equipment):
-    def move(self, character):
-        self.get_equipment.move(character)
-        character.speed += 1  
+    def __init__(self, character):
+        super().__init__(character)
+        self.speed_bonus = 5
+        self.energy_bonus = 20
 
-class PotionEquipment(Equipment):
-    def move(self, character):
-        self.get_equipment.move(character)
-        character.energy += 10  
+    def apply(self):
+        self.character.speed += self.speed_bonus
+        self.character.energy += self.energy_bonus
 
-character1 = Character(WalkStrategy())
-character1_with_sword = Character(WingsEquipment(character1))
-character1_with_armor = Character(PotionEquipment(character1))
+class SwordEquipment(Equipment):
+    def __init__(self, character):
+        super().__init__(character)
+        self.damage_bonus = 15
 
-character1.perform_move() 
-character1_with_sword.perform_move()  
-character1_with_armor.perform_move()  
+    def apply(self):
+        self.character.damage += self.damage_bonus
+
+class ArmorEquipment(Equipment):
+    def __init__(self, character):
+        super().__init__(character)
+        self.hp_bonus = 50
+
+    def apply(self):
+        self.character.hp += self.hp_bonus
+
+character = Character("Hero")
+character.display_stats()
+
+
+
+wings_equipment = WingsEquipment(character)
+sword_equipment = SwordEquipment(character)
+armor_equipment = ArmorEquipment(character)
+
+
+wings_equipment.apply()
+sword_equipment.apply()
+armor_equipment.apply()
+
+character.display_stats()

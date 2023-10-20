@@ -1,60 +1,67 @@
-class Character:
-    def __init__(self, name):
-        self.name = name
-        self.speed = 0
-        self.energy = 100
-        self.hp = 100
-        self.damage = 10
+class GamePlatform:
+    def start(self): pass
+    def save(self): pass
+    def exit(self): pass
 
-    def display_stats(self):
-        print(f"{self.name}: Speed={self.speed}, Energy={self.energy}, HP={self.hp}, Damage={self.damage}")
+class PCPlatform:
+    def bootGame(self): return "Booting game on PC"
+    def writeSaveFile(self): return "Saving game data on PC"
+    def closeGame(self): return "Closing game on PC"
 
-class Equipment(Character):
-    def __init__(self, character):
-        super().__init__(character.name)
-        self.character = character
+class ConsolePlatform:
+    def launchGame(self): return "Launching game on Console"
+    def saveToConsoleMemory(self): return "Storing game data on Console"
+    def shutGame(self): return "Shutting down game on Console"
 
-    def display_stats(self):
-        self.character.display_stats()
+class MobilePlatform:
+    def runApp(self): return "Running game app on Mobile"
+    def saveToMobileStorage(self): return "Saving game state on Mobile"
+    def closeApp(self): return "Closing game app on Mobile"
 
-class WingsEquipment(Equipment):
-    def __init__(self, character):
-        super().__init__(character)
-        self.speed_bonus = 5
-        self.energy_bonus = 20
 
-    def apply(self):
-        self.character.speed += self.speed_bonus
-        self.character.energy += self.energy_bonus
+class PCAdapter(GamePlatform):
+    def __init__(self, platform):
+        self.platform = platform
+    def start(self): return self.platform.bootGame()
+    def save(self): return self.platform.writeSaveFile()
+    def exit(self): return self.platform.closeGame()
 
-class SwordEquipment(Equipment):
-    def __init__(self, character):
-        super().__init__(character)
-        self.damage_bonus = 15
+class ConsoleAdapter(GamePlatform):
+    def __init__(self, platform):
+        self.platform = platform
+    def start(self): return self.platform.launchGame()
+    def save(self): return self.platform.saveToConsoleMemory()
+    def exit(self): return self.platform.shutGame()
 
-    def apply(self):
-        self.character.damage += self.damage_bonus
+class MobileAdapter(GamePlatform):
+    def __init__(self, platform):
+        self.platform = platform
 
-class ArmorEquipment(Equipment):
-    def __init__(self, character):
-        super().__init__(character)
-        self.hp_bonus = 50
-
-    def apply(self):
-        self.character.hp += self.hp_bonus
-
-character = Character("Hero")
-character.display_stats()
+    def start(self): return self.platform.runApp()
+    def save(self): return self.platform.saveToMobileStorage()
+    def exit(self): return self.platform.closeApp()
 
 
 
-wings_equipment = WingsEquipment(character)
-sword_equipment = SwordEquipment(character)
-armor_equipment = ArmorEquipment(character)
+def playGameOnPlatform(platform: GamePlatform):
+    print(platform.start())
+    print(platform.save())
+    print(platform.exit())
 
 
-wings_equipment.apply()
-sword_equipment.apply()
-armor_equipment.apply()
+pc = PCPlatform()
+console = ConsolePlatform()
+mobile = MobilePlatform()
 
-character.display_stats()
+pcAdapter = PCAdapter(pc)
+consoleAdapter = ConsoleAdapter(console)
+mobileAdapter = MobileAdapter(mobile)
+
+print("Playing on PC:")
+playGameOnPlatform(pcAdapter)
+
+print("Playing on Console:")
+playGameOnPlatform(consoleAdapter)
+
+print("Playing on Mobile:")
+playGameOnPlatform(mobileAdapter)

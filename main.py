@@ -1,67 +1,82 @@
-class GamePlatform:
-    def start(self): pass
-    def save(self): pass
-    def exit(self): pass
-
-class PCPlatform:
-    def bootGame(self): return "Booting game on PC"
-    def writeSaveFile(self): return "Saving game data on PC"
-    def closeGame(self): return "Closing game on PC"
-
-class ConsolePlatform:
-    def launchGame(self): return "Launching game on Console"
-    def saveToConsoleMemory(self): return "Storing game data on Console"
-    def shutGame(self): return "Shutting down game on Console"
-
-class MobilePlatform:
-    def runApp(self): return "Running game app on Mobile"
-    def saveToMobileStorage(self): return "Saving game state on Mobile"
-    def closeApp(self): return "Closing game app on Mobile"
+from abc import ABC, abstractmethod
 
 
-class PCAdapter(GamePlatform):
-    def __init__(self, platform):
-        self.platform = platform
-    def start(self): return self.platform.bootGame()
-    def save(self): return self.platform.writeSaveFile()
-    def exit(self): return self.platform.closeGame()
-
-class ConsoleAdapter(GamePlatform):
-    def __init__(self, platform):
-        self.platform = platform
-    def start(self): return self.platform.launchGame()
-    def save(self): return self.platform.saveToConsoleMemory()
-    def exit(self): return self.platform.shutGame()
-
-class MobileAdapter(GamePlatform):
-    def __init__(self, platform):
-        self.platform = platform
-
-    def start(self): return self.platform.runApp()
-    def save(self): return self.platform.saveToMobileStorage()
-    def exit(self): return self.platform.closeApp()
+class Observer(ABC):
+    @abstractmethod
+    def update(self, health: int):
+        pass
 
 
+class Subject(ABC):
+    @abstractmethod
+    def attach(self, observer: Observer):
+        pass
 
-def playGameOnPlatform(platform: GamePlatform):
-    print(platform.start())
-    print(platform.save())
-    print(platform.exit())
+    @abstractmethod
+    def detach(self, observer: Observer):
+        pass
+
+    @abstractmethod
+    def notify(self):
+        pass
 
 
-pc = PCPlatform()
-console = ConsolePlatform()
-mobile = MobilePlatform()
+class Player(Observer):
+    def __init__(self, name, health=100):
+        self.name = name
+        self._health = health
+        self.alerted = False 
 
-pcAdapter = PCAdapter(pc)
-consoleAdapter = ConsoleAdapter(console)
-mobileAdapter = MobileAdapter(mobile)
+    @property
+    def health(self):
+        return self._health
 
-print("Playing on PC:")
-playGameOnPlatform(pcAdapter)
+    @health.setter
+    def health(self, value):
+        if value <= 20 and not self.alerted:
+            self._health = value
+            self.alerted = True
+            self.update(self._health)
+        else:
+            self._health = value
 
-print("Playing on Console:")
-playGameOnPlatform(consoleAdapter)
+    def update(self, health: int):
+        print(f"{self.name}, your health is critically low: {health}% left!")
 
-print("Playing on Mobile:")
-playGameOnPlatform(mobileAdapter)
+class GameSystem(Subject):
+    def __init__(self):
+        self.players = []
+
+    def attach(self, observer: Observer):
+        self.players.append(observer)
+
+    def detach(self, observer: Observer):
+        self.players.remove(observer)
+
+    def notify(self):
+        for player in self.players:
+            if player.health <= 20:
+                player.update(player.health)
+
+    def damage_player(self, player: Player, damage: int):
+        if player in self.players:
+            player.health -= damage
+
+def main():
+    player1 = Player("John")
+    player2 = Player("Jane")
+
+    game = GameSystem()
+    game.attach(player1)
+    game.attach(player2)
+
+    game.damage_player(player1, 85) 
+    game.damage_player(player2, 5)   
+    
+    game.detach(player2)
+    game.damage_player(player2,90)
+
+    
+
+if __name__ == "__main__":
+    main()
